@@ -4,6 +4,14 @@ const nextConfig = {
   experimental: {
     forceSwcTransforms: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.iconfinder.com'
+      }
+    ]
+  }
 };
 
 export default nextConfig;
