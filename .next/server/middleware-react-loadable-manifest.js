@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"pages/index.tsx -> @components/home/EventBanners\":{\"id\":\"pages/index.tsx -> @components/home/EventBanners\",\"files\":[\"static/chunks/src_components_home_EventBanners_tsx.js\"]}}"
