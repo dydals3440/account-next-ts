@@ -1,5 +1,5 @@
 {
-  "name": "part_4_my_account",
+  "name": "part4_my_account",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,16 +9,27 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "firebase": "^10.14.1",
+    "next": "14.2.15",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "14.2.15"
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@babel/preset-react": "^7.25.7",
+    "@emotion/babel-plugin": "^11.12.0",
+    "@emotion/core": "^11.0.0",
+    "@emotion/css": "^11.13.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.2.15"
-  }
+    "eslint-config-next": "14.2.15",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5"
+  },
+  "packageManager": "yarn@4.5.1"
 }
