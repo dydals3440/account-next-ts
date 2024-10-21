@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query'
-import getCards from '@remote/card'
+import { getCards } from '@remote/card'
 
 function useCards() {
   return useQuery(['cards'], () => getCards(), {
