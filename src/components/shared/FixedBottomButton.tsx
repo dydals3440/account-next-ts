@@ -17,6 +17,10 @@ function FixedBottomButton({
   onClick,
   disabled,
 }: FixedBottomButtonProps) {
+  // SSR 에러 방지 -> 이때 아무것도 그리지 않게
+  // 이러면, 서버쪽 그리는 데이터, 클라이언트에서 그리는 hTml이 맞지 않아서 에러 발생.
+  // if (typeof window === 'undefined')
+
   const $portalRoot = document.getElementById('root-portal')
 
   if ($portalRoot == null) {

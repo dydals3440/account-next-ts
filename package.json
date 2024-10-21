@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.13.0",
     "@types/next-auth": "^3.15.0",
     "firebase": "^10.14.1",
+    "framer-motion": "^11.11.9",
     "next": "14.2.15",
     "next-auth": "^4.24.8",
     "react": "^18",
