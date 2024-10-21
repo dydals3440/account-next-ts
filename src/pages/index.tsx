@@ -5,6 +5,7 @@ import Account from '@components/home/Account'
 import { BannerSkeleton } from '@components/home/EventBanners'
 import { CreditScoreSkeleton } from '@components/home/CreditScore'
 import Spacing from '@shared/Spacing'
+import { CardListSkeleton } from '@components/home/CardList'
 
 // lazy + suspense in react
 const EventBanners = dynamic(() => import('@components/home/EventBanners'), {
@@ -19,6 +20,11 @@ const CreditScore = dynamic(() => import('@components/home/CreditScore'), {
   loading: () => <CreditScoreSkeleton />,
 })
 
+const CardList = dynamic(() => import('@components/home/CardList'), {
+  ssr: false,
+  loading: () => <CardListSkeleton />,
+})
+
 export default function Home() {
   const { data } = useSession()
   console.log(data)
@@ -30,6 +36,7 @@ export default function Home() {
       <Spacing size={8} backgroundColor="gray100" />
       <CreditScore />
       <Spacing size={8} backgroundColor="gray100" />
+      <CardList />
     </>
   )
 }
