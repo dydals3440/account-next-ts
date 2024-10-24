@@ -1,4 +1,8 @@
-import { Transaction, TransactionType } from '@models/transaction'
+import {
+  Transaction,
+  TransactionFilterType,
+  TransactionType,
+} from '@models/transaction'
 import {
   collection,
   doc,
@@ -21,25 +25,13 @@ export function createTransaction(newTransaction: Transaction) {
 export async function getTransaction({
   pageParam,
   userId,
+  filter = 'all',
 }: {
   userId: string
   pageParam?: QuerySnapshot<TransactionType>
+  filter?: TransactionFilterType
 }) {
-  const transactionQuery =
-    pageParam == null
-      ? query(
-          collection(store, COLLECTIONS.TRANSACTION),
-          where('userId', '==', userId),
-          orderBy('date', 'desc'),
-          limit(15),
-        )
-      : query(
-          collection(store, COLLECTIONS.TRANSACTION),
-          where('userId', '==', userId),
-          orderBy('date', 'desc'),
-          startAfter(pageParam),
-          limit(15),
-        )
+  const transactionQuery = generateQuery({ filter, pageParam, userId })
 
   const transactionSnapshot = await getDocs(transactionQuery)
   const lastVisible =
@@ -51,4 +43,35 @@ export async function getTransaction({
   }))
 
   return { items, lastVisible }
+}
+
+// 필터는 복잡
+function generateQuery({
+  filter,
+  pageParam,
+  userId,
+}: {
+  filter: TransactionFilterType
+  pageParam?: QuerySnapshot<TransactionType>
+  userId: string
+}) {
+  const baseQuery = query(
+    collection(store, COLLECTIONS.TRANSACTION),
+    where('userId', '==', userId),
+    orderBy('date', 'desc'),
+    limit(15),
+  )
+
+  if (filter !== 'all') {
+    if (pageParam == null) {
+      return query(baseQuery, where('type', '==', filter))
+    }
+    return query(baseQuery, startAfter(pageParam), where('type', '==', filter))
+  } else {
+    if (pageParam == null) {
+      return baseQuery
+    }
+
+    return query(baseQuery, startAfter(pageParam))
+  }
 }
