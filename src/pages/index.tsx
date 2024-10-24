@@ -1,11 +1,15 @@
 import dynamic from 'next/dynamic'
-import { useSession } from 'next-auth/react'
+import { getSession, useSession } from 'next-auth/react'
 
 import Account from '@components/home/Account'
 import { BannerSkeleton } from '@components/home/EventBanners'
 import { CreditScoreSkeleton } from '@components/home/CreditScore'
 import Spacing from '@shared/Spacing'
 import { CardListSkeleton } from '@components/home/CardList'
+import { GetServerSidePropsContext } from 'next'
+import { dehydrate, QueryClient } from 'react-query'
+import { User } from '@models/user'
+import { getAccount } from '@remote/account'
 
 // lazy + suspense in react
 const EventBanners = dynamic(() => import('@components/home/EventBanners'), {
@@ -39,4 +43,26 @@ export default function Home() {
       <CardList />
     </>
   )
+}
+
+// SSR 단계에서 계좌 정보를 불러옴
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context)
+
+  if (session != null && session.user != null) {
+    const client = new QueryClient()
+
+    await client.prefetchQuery(['account', (session.user as User).id], () =>
+      getAccount((session.user as User).id),
+    )
+    return {
+      props: {
+        dehydratedState: JSON.parse(JSON.stringify(dehydrate(client))),
+      },
+    }
+  }
+
+  return {
+    props: {},
+  }
 }
