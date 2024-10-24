@@ -1,16 +1,32 @@
 import dynamic from 'next/dynamic'
 import withAuth from '@shared/hocs/withAuth'
 
-const MonthlyChart = dynamic(() => import('@components/account/MonthlyChart'))
-const Transactions = dynamic(() => import('@components/account/Transactions'))
+const CategoryPieChart = dynamic(
+  () => import('@components/account/CategoryPieChart'),
+  { ssr: false },
+)
+const MonthlyChart = dynamic(() => import('@components/account/MonthlyChart'), {
+  ssr: false,
+})
+const Transactions = dynamic(() => import('@components/account/Transactions'), {
+  ssr: false,
+})
 
 function AccountPage() {
   return (
     <div>
       <MonthlyChart chartData={generateMonthlyChatData()} />
+      <CategoryPieChart chartData={generatePieChartData()} />
       <Transactions />
     </div>
   )
+}
+
+function generatePieChartData() {
+  return ['카페', '쇼핑', '여행', '커피'].map((label) => ({
+    label,
+    amount: Math.floor(Math.random() * (100000 - 10000 + 1)) + 10000,
+  }))
 }
 
 function generateMonthlyChatData() {

@@ -21,7 +21,7 @@ const FILTERS: Array<{ label: string; value: TransactionFilterType }> = [
   },
   {
     label: '입금',
-    value: 'amount',
+    value: 'diposit',
   },
   {
     label: '출금',
