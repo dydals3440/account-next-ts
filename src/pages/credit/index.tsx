@@ -8,16 +8,23 @@ import useUser from '@hooks/useUser'
 import { useCallback } from 'react'
 import { useAlertContext } from '@contexts/AlertContext'
 import { useRouter } from 'next/router'
+import { GetServerSidePropsContext } from 'next'
+import { getSession } from 'next-auth/react'
+import { dehydrate, QueryClient } from 'react-query'
+import { User } from '@models/user'
+import { getCredit } from '@remote/credit'
+import useCredit from '@components/credit/hooks/useCredit'
 
 const FixedBottomButton = dynamic(() => import('@shared/FixedBottomButton'), {
   ssr: false,
 })
 
 function CreditPage() {
-  const 신용점수를조회했는가 = true
   const user = useUser()
   const { open } = useAlertContext()
   const router = useRouter()
+
+  const { data } = useCredit()
 
   const handleCheck = useCallback(() => {
     if (user == null) {
@@ -34,7 +41,7 @@ function CreditPage() {
     router.push('/credit/check')
   }, [user, router, open])
 
-  return 신용점수를조회했는가 ? (
+  return data != null ? (
     <div>
       <Spacing size={40} />
       <Flex align="center" direction="column">
@@ -42,7 +49,7 @@ function CreditPage() {
           나의 신용점수
         </Text>
         <Spacing size={10} />
-        <CreditScoreChart score={0} />
+        <CreditScoreChart score={data.creditScore} />
       </Flex>
       <Spacing size={80} />
       <ul>
@@ -97,6 +104,29 @@ function CreditPage() {
       />
     </div>
   )
+}
+
+// SSR에서 신용점수를 불러옴
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context)
+
+  if (session != null && session.user != null) {
+    const client = new QueryClient()
+
+    await client.prefetchQuery(['credit', (session.user as User).id], () =>
+      getCredit((session.user as User).id),
+    )
+
+    return {
+      props: {
+        dehydratedState: JSON.parse(JSON.stringify(dehydrate(client))),
+      },
+    }
+  }
+
+  return {
+    props: {},
+  }
 }
 
 export default CreditPage
