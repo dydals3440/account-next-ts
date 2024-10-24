@@ -3,10 +3,20 @@ import { useState } from 'react'
 import ProgressBar from '@shared/ProgressBar'
 import Terms from '@components/account/Terms'
 import useUser from '@hooks/useUser'
-import { getTerms, setTerms } from '@remote/account'
+import { createAccount, getAccount, getTerms, setTerms } from '@remote/account'
 import { GetServerSidePropsContext } from 'next'
 import { getSession } from 'next-auth/react'
 import { User } from '@models/user'
+import Form from '@pages/account/form'
+import { Account } from '@models/account'
+import FullPageLoader from '@shared/FullPageLoader'
+import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
+
+const FixedBottomButton = dynamic(
+  () => import('@/components/shared/FixedBottomButton'),
+  { ssr: false },
+)
 
 // 마지막 페이지는 2
 // STEP_0 = 약관동의
@@ -17,6 +27,7 @@ const LAST_STEP = 2 // 완료 페이지
 function AccountNew({ initialStep }: { initialStep: number }) {
   const [step, setStep] = useState(initialStep)
   const user = useUser()
+  const router = useRouter()
 
   console.log(initialStep)
 
@@ -32,6 +43,37 @@ function AccountNew({ initialStep }: { initialStep: number }) {
           }}
         />
       ) : null}
+      {step === 1 && (
+        <Form
+          onNext={async (formValues) => {
+            console.log('formValues', formValues)
+
+            const newAccount = {
+              ...formValues,
+              accountNumber: Date.now(),
+              balance: 0,
+              status: 'READY',
+              userId: user?.id as string,
+            } as Account
+
+            await createAccount(newAccount)
+
+            setStep(step + 1)
+          }}
+        />
+      )}
+
+      {step === 2 && (
+        <>
+          <FullPageLoader message={'계좌 개설 신청이 완료되었습니다'} />
+          <FixedBottomButton
+            label="확인"
+            onClick={() => {
+              router.push('/')
+            }}
+          />
+        </>
+      )}
     </div>
   )
 }
@@ -48,16 +90,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  if (agreedTerms != null) {
+  const account = await getAccount((session?.user as User).id)
+
+  if (account == null) {
     return {
       props: {
         initialStep: 1,
       },
     }
   }
+
   return {
     props: {
-      initialStep: 0,
+      initialStep: 2,
     },
   }
 }
