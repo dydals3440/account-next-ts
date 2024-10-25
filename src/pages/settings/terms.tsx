@@ -1,6 +1,12 @@
 import { GetServerSidePropsContext } from 'next'
 import { getSession } from 'next-auth/react'
-import { dehydrate, QueryClient, useQuery } from 'react-query'
+import {
+  dehydrate,
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from 'react-query'
 import { User } from '@models/user'
 import { getTerms } from '@remote/account'
 import useUser from '@hooks/useUser'
@@ -11,15 +17,26 @@ import Top from '@shared/Top'
 import Text from '@shared/Text'
 import ListRow from '@shared/ListRow'
 import Button from '@shared/Button'
+import { updateTerms } from '@remote/account'
 
 function TermsPage() {
   const user = useUser()
+  const client = useQueryClient()
 
   const { data } = useQuery(
     ['terms', user?.id],
     () => getTerms(user?.id as string),
     {
       enabled: user != null,
+    },
+  )
+
+  const { mutate, isLoading } = useMutation(
+    (termIds: string[]) => updateTerms(user?.id as string, termIds),
+    {
+      onSuccess: () => {
+        client.invalidateQueries(['terms', user?.id])
+      },
     },
   )
 
@@ -42,6 +59,19 @@ function TermsPage() {
     return { 필수약관목록, 선택약관목록 }
   }, [data])
 
+  const handleDisagree = (selectedTermId: string) => {
+    // [1, 2, 3]
+    // selectedTermId (삭제되길 원하는 값 = 3)
+    // [1, 2, 3].filter((n) => n !== 3) => [1, 2]
+    const updatedTermIds = data?.termIds.filter(
+      (termId) => selectedTermId !== termId,
+    )
+
+    if (updatedTermIds != null) {
+      mutate(updatedTermIds)
+    }
+  }
+
   return (
     <div>
       <Top title={'약관'} subTitle={'약관 리스트 및 철회'} />
@@ -59,7 +89,14 @@ function TermsPage() {
             <ListRow
               key={term.id}
               contents={<ListRow.Texts title={`[선택] ${term.title}`} />}
-              right={<Button>철회</Button>}
+              right={
+                <Button
+                  disabled={isLoading === true}
+                  onClick={() => handleDisagree(term.id)}
+                >
+                  철회
+                </Button>
+              }
             />
           ))}
         </ul>
